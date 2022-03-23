@@ -1,0 +1,21 @@
+{
+    "name": "douggonsouza/routes",
+    "description": "Gerenciamento das rotas para a requisição",
+    "type": "library",
+    "require": {
+        "douggonsouza/regexed": "dev-main"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Douggonsouza\\Routes\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Douglas Gonçalves de Souza",
+            "email": "douggonsouza@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
