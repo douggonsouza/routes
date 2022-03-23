@@ -9,22 +9,19 @@ class ComposerStaticInit1c61331edd21dae2fadda165f14cb481
     public static $prefixLengthsPsr4 = array (
         'd' => 
         array (
+            'douggonsouza\\routes\\' => 20,
             'douggonsouza\\regexed\\' => 21,
-        ),
-        'D' => 
-        array (
-            'Douggonsouza\\Routes\\' => 20,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'douggonsouza\\routes\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+        ),
         'douggonsouza\\regexed\\' => 
         array (
             0 => __DIR__ . '/..' . '/douggonsouza/regexed/src',
-        ),
-        'Douggonsouza\\Routes\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 
@@ -33,6 +30,12 @@ class ComposerStaticInit1c61331edd21dae2fadda165f14cb481
         'douggonsouza\\regexed\\dicionary' => __DIR__ . '/..' . '/douggonsouza/regexed/src/dicionary.php',
         'douggonsouza\\regexed\\dicionaryInterface' => __DIR__ . '/..' . '/douggonsouza/regexed/src/dicionaryInterface.php',
         'douggonsouza\\regexed\\regexed' => __DIR__ . '/..' . '/douggonsouza/regexed/src/regexed.php',
+        'douggonsouza\\routes\\autentications\\autenticationsInterface' => __DIR__ . '/../..' . '/src/autentications/autenticationsInterface.php',
+        'douggonsouza\\routes\\autentications\\bearerToken' => __DIR__ . '/../..' . '/src/autentications/bearerToken.php',
+        'douggonsouza\\routes\\autentications\\token' => __DIR__ . '/../..' . '/src/autentications/token.php',
+        'douggonsouza\\routes\\autentications\\userToken' => __DIR__ . '/../..' . '/src/autentications/userToken.php',
+        'douggonsouza\\routes\\router' => __DIR__ . '/../..' . '/src/router.php',
+        'douggonsouza\\routes\\routerInterface' => __DIR__ . '/../..' . '/src/routerInterface.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

@@ -10,4 +10,10 @@ return array(
     'douggonsouza\\regexed\\dicionary' => $vendorDir . '/douggonsouza/regexed/src/dicionary.php',
     'douggonsouza\\regexed\\dicionaryInterface' => $vendorDir . '/douggonsouza/regexed/src/dicionaryInterface.php',
     'douggonsouza\\regexed\\regexed' => $vendorDir . '/douggonsouza/regexed/src/regexed.php',
+    'douggonsouza\\routes\\autentications\\autenticationsInterface' => $baseDir . '/src/autentications/autenticationsInterface.php',
+    'douggonsouza\\routes\\autentications\\bearerToken' => $baseDir . '/src/autentications/bearerToken.php',
+    'douggonsouza\\routes\\autentications\\token' => $baseDir . '/src/autentications/token.php',
+    'douggonsouza\\routes\\autentications\\userToken' => $baseDir . '/src/autentications/userToken.php',
+    'douggonsouza\\routes\\router' => $baseDir . '/src/router.php',
+    'douggonsouza\\routes\\routerInterface' => $baseDir . '/src/routerInterface.php',
 );
