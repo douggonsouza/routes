@@ -34,6 +34,7 @@ class ComposerStaticInit1c61331edd21dae2fadda165f14cb481
         'douggonsouza\\routes\\autentications\\bearerToken' => __DIR__ . '/../..' . '/src/autentications/bearerToken.php',
         'douggonsouza\\routes\\autentications\\token' => __DIR__ . '/../..' . '/src/autentications/token.php',
         'douggonsouza\\routes\\autentications\\userToken' => __DIR__ . '/../..' . '/src/autentications/userToken.php',
+        'douggonsouza\\routes\\dicionary' => __DIR__ . '/../..' . '/src/dicionary.php',
         'douggonsouza\\routes\\router' => __DIR__ . '/../..' . '/src/router.php',
         'douggonsouza\\routes\\routerInterface' => __DIR__ . '/../..' . '/src/routerInterface.php',
     );

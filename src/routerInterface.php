@@ -2,9 +2,8 @@
 
 namespace douggonsouza\routes;
 
-use driver\router\requestInterface;
-use driver\router\autentications\autenticationsInterface;
-use driver\control\actInterface;
+use douggonsouza\router\requestInterface;
+use douggonsouza\router\autentications\autenticationsInterface;
 
 /**
  * Interface de rotas
@@ -19,7 +18,7 @@ interface routerInterface
      * @param object $request
      * @version 1.0.0
      */
-    public static function request(requestInterface $request);
+    public static function request($request);
 
     /**
      * Undocumented function
@@ -31,7 +30,7 @@ interface routerInterface
      * 
      * @version 1.0.0
      */
-    public static function routing($typeRequest, $pattern, actInterface $controller, autenticationsInterface $autenticate = null);
+    public static function routing($typeRequest, $pattern, $controller, $autenticate = null);
 
     /**
      * Executa a resposta do controller
@@ -43,7 +42,7 @@ interface routerInterface
      * 
      * @version 1.0.1
      */
-    public static function response(actInterface $controller, array $params = array());
+    public static function response($controller, array $params = array());
 
     /**
      * Instancia a classe de controller

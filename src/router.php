@@ -11,85 +11,187 @@
 
 namespace douggonsouza\routes;
 
-use driver\router\routerInterface;
-use driver\router\autentications\autenticationsInterface;
-use driver\router\autenticate;
+use douggonsouza\regexed\regexed;
+use douggonsouza\router\routerInterface;
+use douggonsouza\regexed\dicionaryInterface;
+use douggonsouza\request\usagesInterface;
+use douggonsouza\propertys\propertysInterface;
+use douggonsouza\router\autentications\autenticationsInterface;
 
-abstract class router implements routerInterface
+abstract class router
 {
     // TIPOS DE REQUISIÇÃO
     const _POST   = 'POST';
     const _GET    = 'GET';
     const _PUT    = 'PUT';
+    const _PATCH  = 'PATCH';
     const _DELETE = 'DELETE';
     const _HEAD   = 'HEAD';
 
+    protected static $regexed;
+    protected static $benchmarck;
     protected static $controller;
     protected static $autenticate;
+    protected static $usages;
+    protected static $infos;
+
+    const VERBS_HTTP = array(
+        self::_POST => self::_POST,
+        self::_GET  => self::_GET,
+        self::_PUT  => self::_PUT,
+        self::_PATCH  => self::_PATCH,
+        self::_DELETE => self::_DELETE,
+        self::_HEAD => self::_HEAD,
+    );
 
     /**
-     * Colhe informações locais
+     * Recebe dicionario de tradução regex
      *
-     * @param object $request
-     * @version 1.0.0
+     * @param dicionaryInterface $dicionary
+     * 
+     * @return void
+     * 
      */
-    public function request(requestInterface $request)
+    public static function dicionary(dicionaryInterface $dicionary)
     {
-        return;
+        self::setRegexed($dicionary);
     }
 
     /**
-     * Undocumented function
+     * Recebe a classe usages
+     *
+     * @param usagesInterface $usages
+     * @param propertysInterface|null $propertys
+     * 
+     * @return [type]
+     * 
+     */
+    public static function usages(usagesInterface $usages, propertysInterface $propertys = null)
+    {
+        self::setUsages($usages);
+
+        if(isset($propertys)){
+            self::fillInfos(self::getUsages(), $propertys);
+        }
+    }
+
+    /**
+     * Objeto referência do template
+     *
+     * @param string $benchmarck
+     * 
+     * @return void
+     * 
+     */
+    public static function benchmarck($benchmarck)
+    {
+        self::setBenchmarck($benchmarck);
+    }
+
+    /**
+     * Encaminha configuração de roteamento do bloco
+     *
+     * @param string $controller
+     * @param propertysInterface|null $params
+     * 
+     * @return mixed
+     * 
+     */
+    public static function block(string $controller, propertysInterface &$params)
+    {
+        $controller = explode(':', $controller);
+
+        if(!class_exists($controller[0])){
+            throw new \Exception('Inexistência da classe em memória.');
+        }
+
+        return self::response($controller[0], $params, $controller[1]);
+    }
+
+    /**
+     * Encaminha configuração para assets
+     *
+     * @param string $asset
+     * 
+     * @return string
+     * 
+     */
+    public static function assets(string $asset, string $type)
+    {
+        return self::getBenchmarck()->assets($asset, $type);
+    }
+
+    /**
+     * Encaminha configuração de roteamento
      *
      * @param string $typeRequest
      * @param string $pattern
-     * @param string $url
-     * @return void
+     * @param string $controller
+     * @param null   $autenticate
      * 
-     * @version 1.0.0
+     * @return mixed
+     * 
      */
-    public static function routing($typeRequest, $pattern, actInterface $controller, autenticationsInterface $autenticate = null)
+    public static function routing(string $typeRequest, string $pattern, string $controller, $autenticate = null)
     {
         if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
-            exit(self::http_response_code(500));
+            throw new \Exception("Parametros obrigatórios não identificados.");
         }
 
-        if (!preg_match(
-            self::translate($pattern),
-            '',
-            $params)) {
-                return;
+        if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
+            return;
         }
 
-        if(isset($autenticate)){
-            if(!$autenticate->isAutenticate()){
-                exit(self::http_response_code(401));
-            }
-        }
+        // autenticação
+        // if(isset($autenticate)){
+        //     if(!$autenticate->isAutenticate()){
+        //         exit(self::http_response_code(401));
+        //     }
+        // }
 
-        exit(self::http_response_code(
-            self::response($controller, array())
+        exit(self::http_response_code(self::response($controller, self::getInfos())
         ));
+    }
+
+    /**
+     * Prepara infos
+     *
+     * @param usagesInterface    $usages
+     * @param propertysInterface $propertys
+     * 
+     * @return void
+     * 
+     */
+    public static function fillInfos(usagesInterface $usages, propertysInterface $propertys)
+    {
+        if(!isset($usages) || !isset($propertys)){
+            throw new \Exception("Parâmetros 'usages' ou 'propertys' não existem.");
+        }
+
+        self::setInfos($propertys->add(array(
+            'header' => $usages->getHeader(),
+            'get' => $_GET,
+            'post' => $_POST,
+            'file' => $_FILES,
+            'request' => $usages->getRequest()
+        )));
     }
 
     /**
      * Traduz a string para regex
      *
      * @param string $text
+     * 
      * @return string|null
      */
-    protected static function translate(string $text)
+    protected function translate(string $text)
     {
         if(!isset($text) || empty($text)){
             return $text;
         }
 
         // traduz para regex
-        return '/^'.str_replace(
-            array('/',':number',':char',':alfanumeric',':string'),
-            array('\/','(\d+)','([a-zA-Z]+)','([a-zA-Z0-9]+)','([a-zA-Z0-9 .\-\_]+)'),
-            $text
-        ).'$/';
+        return '/^' . self::getRegexed()->translate($text) . '$/';
     }
 
     /**
@@ -102,7 +204,7 @@ abstract class router implements routerInterface
      * 
      * @version 1.0.1
      */
-    public static function controller(string $controller, array $params = array())
+    public static function response(string $controller, propertysInterface $infos = null, string $function = null)
     {
         if(!isset($controller) && empty($controller)){
             throw new \Exception('O parâmetro Controller é obrigatório.');
@@ -115,17 +217,16 @@ abstract class router implements routerInterface
                 return 404;
             }
 
-            // Assets Commons
-            define('_assets', $controller->getAssets());
-    
+            // benchmarck
+            self::getController()->benchmarck(self::getBenchmarck());
             // chama evento anterior
-            $controller->_before();
-
+            self::getController()->_before();
+            if(isset($function) && !empty($function)){
+                self::getController()->$function($infos);
+                return 200; 
+            }
             // chama função main
-            $controller->main(array_merge(array('params' => $params), $_REQUEST));
-
-            // chama evento posterior
-            $controller->_after();
+            self::getController()->main($infos);
 
             return 200;
         }
@@ -143,10 +244,14 @@ abstract class router implements routerInterface
      * 
      * @version 1.0.0
      */
-    public static function redirect(string $controller, array $params = array())
+    public static function redirect(string $controller, propertysInterface $infos = null)
     {
+        if(!isset($controller) && empty($controller)){
+            throw new \Exception('O parâmetro Controller é obrigatório.');
+        }
+
         try{
-            return self::controller($controller, $params);
+            return self::response($controller, $infos);
         }
         catch(\Exception $e){
             return 500;
@@ -157,10 +262,10 @@ abstract class router implements routerInterface
      * Recarrega a classe de controller
      *
      * @param string $urlRelative
+     * 
      * @return mixed
      * 
      * @version 1.0.0
-     * @deprecated 1.0.0
      */
     public static function location(string $urlRelative)
     {
@@ -176,9 +281,10 @@ abstract class router implements routerInterface
      * Devolve código de resposta
      *
      * @param int $code
+     * 
      * @return int
      */
-    public static function http_response_code($code = NULL)
+    protected function http_response_code($code = NULL)
     {
         if(!isset($code) || empty($code)){
             $code = (isset($GLOBALS['http_response_code']) ? $GLOBALS['http_response_code'] : 200);
@@ -307,6 +413,86 @@ abstract class router implements routerInterface
     {
         if(isset($autenticate) && !empty($autenticate)){
             self::$autenticate = $autenticate;
+        }
+    }
+
+    /**
+     * Get the value of regexed
+     */ 
+    public static function getRegexed()
+    {
+        return self::$regexed;
+    }
+
+    /**
+     * Set the value of regexed
+     *
+     * @return  self
+     */ 
+    public static function setRegexed(dicionaryInterface $dicionary)
+    {
+        if(isset($dicionary) && !empty($dicionary)){
+            self::$regexed = new regexed($dicionary);
+        }
+    }
+
+    /**
+     * Get the value of benchmarck
+     */ 
+    public static function getBenchmarck()
+    {
+        return self::$benchmarck;
+    }
+
+    /**
+     * Set the value of benchmarck
+     *
+     * @return  self
+     */ 
+    public static function setBenchmarck($benchmarck)
+    {
+        if(isset($benchmarck) && !empty($benchmarck)){
+            self::$benchmarck = $benchmarck;
+        }
+    }
+
+    /**
+     * Get the value of usages
+     */ 
+    public static function getUsages()
+    {
+        return self::$usages;
+    }
+
+    /**
+     * Set the value of usages
+     *
+     * @return  self
+     */ 
+    protected function setUsages(usagesInterface $usages)
+    {
+        if(isset($usages) && !empty($usages)){
+            self::$usages = $usages;
+        }
+    }
+
+    /**
+     * Get the value of infos
+     */ 
+    public static function getInfos()
+    {
+        return self::$infos;
+    }
+
+    /**
+     * Set the value of infos
+     *
+     * @return  self
+     */ 
+    protected function setInfos(propertysInterface $infos)
+    {
+        if(isset($infos) && !empty($infos)){
+            self::$infos = $infos;
         }
     }
 }
