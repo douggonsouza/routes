@@ -18,6 +18,9 @@ use douggonsouza\request\usagesInterface;
 use douggonsouza\propertys\propertysInterface;
 use douggonsouza\router\autentications\autenticationsInterface;
 
+/**
+ * router: Classe abstrata para de roteamento da requisição
+ */
 abstract class router
 {
     // TIPOS DE REQUISIÇÃO
@@ -45,25 +48,25 @@ abstract class router
     );
 
     /**
-     * Recebe dicionario de tradução regex
+     * dicionary: Recebe dicionario de tradução regex
      *
      * @param dicionaryInterface $dicionary
      * 
      * @return void
      * 
      */
-    public static function dicionary(dicionaryInterface $dicionary)
+    public static function regexed(dicionaryInterface $regexed)
     {
-        self::setRegexed($dicionary);
+        self::setRegexed($regexed);
     }
 
     /**
-     * Recebe a classe usages
+     * usages: Recebe a classe usages
      *
      * @param usagesInterface $usages
      * @param propertysInterface|null $propertys
      * 
-     * @return [type]
+     * @return void
      * 
      */
     public static function usages(usagesInterface $usages, propertysInterface $propertys = null)
@@ -76,7 +79,7 @@ abstract class router
     }
 
     /**
-     * Objeto referência do template
+     * benchmarck: Objeto referência do template
      *
      * @param string $benchmarck
      * 
@@ -89,7 +92,7 @@ abstract class router
     }
 
     /**
-     * Encaminha configuração de roteamento do bloco
+     * block: Encaminha configuração de roteamento do bloco
      *
      * @param string $controller
      * @param propertysInterface|null $params
@@ -109,20 +112,7 @@ abstract class router
     }
 
     /**
-     * Encaminha configuração para assets
-     *
-     * @param string $asset
-     * 
-     * @return string
-     * 
-     */
-    public static function assets(string $asset, string $type)
-    {
-        return self::getBenchmarck()->assets($asset, $type);
-    }
-
-    /**
-     * Encaminha configuração de roteamento
+     * routing: Encaminha configuração de roteamento
      *
      * @param string $typeRequest
      * @param string $pattern
@@ -162,7 +152,7 @@ abstract class router
      * @return void
      * 
      */
-    public static function fillInfos(usagesInterface $usages, propertysInterface $propertys)
+    protected static function fillInfos(usagesInterface $usages, propertysInterface $propertys)
     {
         if(!isset($usages) || !isset($propertys)){
             throw new \Exception("Parâmetros 'usages' ou 'propertys' não existem.");
@@ -204,7 +194,7 @@ abstract class router
      * 
      * @version 1.0.1
      */
-    public static function response(string $controller, propertysInterface $infos = null, string $function = null)
+    protected static function response(string $controller, propertysInterface $infos = null, string $function = null)
     {
         if(!isset($controller) && empty($controller)){
             throw new \Exception('O parâmetro Controller é obrigatório.');
@@ -236,7 +226,7 @@ abstract class router
     }
 
     /**
-     * Recarrega a classe de controller
+     * redirect: Recarrega a classe de controller
      *
      * @param string $controller
      * 
@@ -259,7 +249,7 @@ abstract class router
     }
 
     /**
-     * Recarrega a classe de controller
+     * location: Recarrega a classe de controller
      *
      * @param string $urlRelative
      * 
@@ -389,7 +379,7 @@ abstract class router
      *
      * @return  self
      */ 
-    public static function setController($controller)
+    protected static function setController($controller)
     {
         if(isset($controller) && !empty($controller)){
             self::$controller = $controller;
@@ -409,7 +399,7 @@ abstract class router
      *
      * @return  self
      */ 
-    public static function setAutenticate($autenticate)
+    protected static function setAutenticate($autenticate)
     {
         if(isset($autenticate) && !empty($autenticate)){
             self::$autenticate = $autenticate;
@@ -417,7 +407,7 @@ abstract class router
     }
 
     /**
-     * Get the value of regexed
+     * getRegexed: Get the value of regexed
      */ 
     public static function getRegexed()
     {
@@ -429,15 +419,15 @@ abstract class router
      *
      * @return  self
      */ 
-    public static function setRegexed(dicionaryInterface $dicionary)
+    protected static function setRegexed(dicionaryInterface $regexed)
     {
-        if(isset($dicionary) && !empty($dicionary)){
-            self::$regexed = new regexed($dicionary);
+        if(isset($regexed) && !empty($regexed)){
+            self::$regexed = $regexed;
         }
     }
 
     /**
-     * Get the value of benchmarck
+     * getBenchmarck: Get the value of benchmarck
      */ 
     public static function getBenchmarck()
     {
@@ -449,7 +439,7 @@ abstract class router
      *
      * @return  self
      */ 
-    public static function setBenchmarck($benchmarck)
+    protected static function setBenchmarck($benchmarck)
     {
         if(isset($benchmarck) && !empty($benchmarck)){
             self::$benchmarck = $benchmarck;
@@ -457,7 +447,7 @@ abstract class router
     }
 
     /**
-     * Get the value of usages
+     * getUsages: Get the value of usages
      */ 
     public static function getUsages()
     {
@@ -477,7 +467,7 @@ abstract class router
     }
 
     /**
-     * Get the value of infos
+     * getInfos: Get the value of infos
      */ 
     public static function getInfos()
     {
