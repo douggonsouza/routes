@@ -18,9 +18,6 @@ use douggonsouza\request\usagesInterface;
 use douggonsouza\propertys\propertysInterface;
 use douggonsouza\router\autentications\autenticationsInterface;
 
-/**
- * router: Classe abstrata para de roteamento da requisição
- */
 abstract class router
 {
     // TIPOS DE REQUISIÇÃO
@@ -48,25 +45,25 @@ abstract class router
     );
 
     /**
-     * dicionary: Recebe dicionario de tradução regex
+     * Recebe dicionario de tradução regex
      *
      * @param dicionaryInterface $dicionary
      * 
      * @return void
      * 
      */
-    public static function regexed(dicionaryInterface $regexed)
+    public static function dicionary(dicionaryInterface $dicionary)
     {
-        self::setRegexed($regexed);
+        self::setRegexed($dicionary);
     }
 
     /**
-     * usages: Recebe a classe usages
+     * Recebe a classe usages
      *
      * @param usagesInterface $usages
      * @param propertysInterface|null $propertys
      * 
-     * @return void
+     * @return [type]
      * 
      */
     public static function usages(usagesInterface $usages, propertysInterface $propertys = null)
@@ -79,7 +76,7 @@ abstract class router
     }
 
     /**
-     * benchmarck: Objeto referência do template
+     * Objeto referência do template
      *
      * @param string $benchmarck
      * 
@@ -92,7 +89,7 @@ abstract class router
     }
 
     /**
-     * block: Encaminha configuração de roteamento do bloco
+     * Encaminha configuração de roteamento do bloco
      *
      * @param string $controller
      * @param propertysInterface|null $params
@@ -112,7 +109,45 @@ abstract class router
     }
 
     /**
-     * routing: Encaminha configuração de roteamento
+     * Encaminha configuração de roteamento do identificador
+     *
+     * @param string $identify
+     * @param propertysInterface|null $params
+     * 
+     * @return mixed
+     * 
+     */
+    public static function identify(string $identify, propertysInterface &$params)
+    {
+        $config = self::getBenchmarck()::getIdentify()->getConfig()[$identify];
+        if(!isset($config) || !isset($config['controller']) || empty($config['controller'])){
+            throw new \Exception('Não existe configuração para o identificador.');
+        }
+
+        $controller = explode(':', $config['controller']);
+
+        if(!class_exists($controller[0])){
+            throw new \Exception('Inexistência da classe em memória.');
+        }
+
+        return self::response($controller[0], $params, $controller[1]);
+    }
+
+    /**
+     * Encaminha configuração para assets
+     *
+     * @param string $asset
+     * 
+     * @return string
+     * 
+     */
+    public static function assets(string $asset, string $type)
+    {
+        return self::getBenchmarck()->assets($asset, $type);
+    }
+
+    /**
+     * Encaminha configuração de roteamento
      *
      * @param string $typeRequest
      * @param string $pattern
@@ -152,7 +187,7 @@ abstract class router
      * @return void
      * 
      */
-    protected static function fillInfos(usagesInterface $usages, propertysInterface $propertys)
+    public static function fillInfos(usagesInterface $usages, propertysInterface $propertys)
     {
         if(!isset($usages) || !isset($propertys)){
             throw new \Exception("Parâmetros 'usages' ou 'propertys' não existem.");
@@ -194,7 +229,7 @@ abstract class router
      * 
      * @version 1.0.1
      */
-    protected static function response(string $controller, propertysInterface $infos = null, string $function = null)
+    public static function response(string $controller, propertysInterface $infos = null, string $function = null)
     {
         if(!isset($controller) && empty($controller)){
             throw new \Exception('O parâmetro Controller é obrigatório.');
@@ -226,7 +261,7 @@ abstract class router
     }
 
     /**
-     * redirect: Recarrega a classe de controller
+     * Recarrega a classe de controller
      *
      * @param string $controller
      * 
@@ -249,7 +284,7 @@ abstract class router
     }
 
     /**
-     * location: Recarrega a classe de controller
+     * Recarrega a classe de controller
      *
      * @param string $urlRelative
      * 
@@ -379,7 +414,7 @@ abstract class router
      *
      * @return  self
      */ 
-    protected static function setController($controller)
+    public static function setController($controller)
     {
         if(isset($controller) && !empty($controller)){
             self::$controller = $controller;
@@ -399,7 +434,7 @@ abstract class router
      *
      * @return  self
      */ 
-    protected static function setAutenticate($autenticate)
+    public static function setAutenticate($autenticate)
     {
         if(isset($autenticate) && !empty($autenticate)){
             self::$autenticate = $autenticate;
@@ -407,7 +442,7 @@ abstract class router
     }
 
     /**
-     * getRegexed: Get the value of regexed
+     * Get the value of regexed
      */ 
     public static function getRegexed()
     {
@@ -419,15 +454,15 @@ abstract class router
      *
      * @return  self
      */ 
-    protected static function setRegexed(dicionaryInterface $regexed)
+    public static function setRegexed(dicionaryInterface $dicionary)
     {
-        if(isset($regexed) && !empty($regexed)){
-            self::$regexed = $regexed;
+        if(isset($dicionary) && !empty($dicionary)){
+            self::$regexed = new regexed($dicionary);
         }
     }
 
     /**
-     * getBenchmarck: Get the value of benchmarck
+     * Get the value of benchmarck
      */ 
     public static function getBenchmarck()
     {
@@ -439,7 +474,7 @@ abstract class router
      *
      * @return  self
      */ 
-    protected static function setBenchmarck($benchmarck)
+    public static function setBenchmarck($benchmarck)
     {
         if(isset($benchmarck) && !empty($benchmarck)){
             self::$benchmarck = $benchmarck;
@@ -447,7 +482,7 @@ abstract class router
     }
 
     /**
-     * getUsages: Get the value of usages
+     * Get the value of usages
      */ 
     public static function getUsages()
     {
@@ -467,7 +502,7 @@ abstract class router
     }
 
     /**
-     * getInfos: Get the value of infos
+     * Get the value of infos
      */ 
     public static function getInfos()
     {

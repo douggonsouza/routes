@@ -27,7 +27,7 @@ class dicionary implements dicionaryInterface
      * @return string
      * 
      */
-    protected function _number(string $text)
+    public function _number(string $text)
     {
         if(!isset($text) || empty($text)){
             return '';
@@ -44,7 +44,7 @@ class dicionary implements dicionaryInterface
      * @return string
      * 
      */
-    protected function _char(string $text)
+    public function _char(string $text)
     {
         if(!isset($text) || empty($text)){
             return '';
@@ -61,7 +61,7 @@ class dicionary implements dicionaryInterface
      * @return string
      * 
      */
-    protected function _alfanumeric(string $text)
+    public function _alfanumeric(string $text)
     {
         if(!isset($text) || empty($text)){
             return '';
@@ -78,7 +78,7 @@ class dicionary implements dicionaryInterface
      * @return string
      * 
      */
-    protected function _string(string $text)
+    public function _string(string $text)
     {
         if(!isset($text) || empty($text)){
             return '';
