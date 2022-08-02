@@ -174,8 +174,7 @@ abstract class router
         //     }
         // }
 
-        exit(self::http_response_code(self::response($controller, self::getInfos())
-        ));
+        exit(self::response($controller, self::getInfos()));
     }
 
     /**
@@ -209,7 +208,7 @@ abstract class router
      * 
      * @return string|null
      */
-    protected function translate(string $text)
+    protected static function translate(string $text)
     {
         if(!isset($text) || empty($text)){
             return $text;
@@ -309,7 +308,7 @@ abstract class router
      * 
      * @return int
      */
-    protected function http_response_code($code = NULL)
+    protected static function http_response_code($code = NULL)
     {
         if(!isset($code) || empty($code)){
             $code = (isset($GLOBALS['http_response_code']) ? $GLOBALS['http_response_code'] : 200);
@@ -479,6 +478,7 @@ abstract class router
         if(isset($benchmarck) && !empty($benchmarck)){
             self::$benchmarck = $benchmarck;
         }
+        return;
     }
 
     /**
@@ -494,7 +494,7 @@ abstract class router
      *
      * @return  self
      */ 
-    protected function setUsages(usagesInterface $usages)
+    protected static function setUsages(usagesInterface $usages)
     {
         if(isset($usages) && !empty($usages)){
             self::$usages = $usages;
@@ -514,7 +514,7 @@ abstract class router
      *
      * @return  self
      */ 
-    protected function setInfos(propertysInterface $infos)
+    protected static function setInfos(propertysInterface $infos)
     {
         if(isset($infos) && !empty($infos)){
             self::$infos = $infos;
