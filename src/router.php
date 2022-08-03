@@ -80,12 +80,23 @@ abstract class router
      *
      * @param string $benchmarck
      * 
-     * @return void
+     * @return mixed
      * 
      */
     public static function benchmarck($benchmarck)
     {
         self::setBenchmarck($benchmarck);
+        return self::getBenchmarck();
+    }
+
+    public static function label(string $label)
+    {
+        $benchmarck = self::getBenchmarck();
+        if(!isset($benchmarck)){ 
+            throw new \Exception("Benchmarck não identificado.");
+        }
+
+        return $benchmarck->getLanguage()->get($label);
     }
 
     /**
