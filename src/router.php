@@ -17,6 +17,7 @@ use douggonsouza\regexed\dicionaryInterface;
 use douggonsouza\request\usagesInterface;
 use douggonsouza\propertys\propertysInterface;
 use douggonsouza\router\autentications\autenticationsInterface;
+use douggonsouza\mvc\view\display;
 
 abstract class router
 {
@@ -89,6 +90,13 @@ abstract class router
         return self::getBenchmarck();
     }
 
+    /**
+     * Expõe o valor da etiqueta
+     * 
+     * @param string $label
+     * 
+     * @return string
+     */
     public static function label(string $label)
     {
         $benchmarck = self::getBenchmarck();
@@ -108,7 +116,7 @@ abstract class router
      * @return mixed
      * 
      */
-    public static function block(string $controller, propertysInterface &$params)
+    public static function block(string $controller, propertysInterface &$params = null)
     {
         $controller = explode(':', $controller);
 
@@ -128,20 +136,23 @@ abstract class router
      * @return mixed
      * 
      */
-    public static function identify(string $identify, propertysInterface &$params)
+    public static function identify(string $identify, propertysInterface $params)
     {
+        $controller = null;
+
+        // idenificador
         $config = self::getBenchmarck()::getIdentify()->getConfig()[$identify];
-        if(!isset($config) || !isset($config['controller']) || empty($config['controller'])){
-            throw new \Exception('Não existe configuração para o identificador.');
+        if(isset($config) && !empty($config)){
+            if(isset($config['controller']) && !empty($config['controller'])){
+                $controller = explode(':', $config['controller']);
+            }
         }
 
-        $controller = explode(':', $config['controller']);
-
-        if(!class_exists($controller[0])){
-            throw new \Exception('Inexistência da classe em memória.');
+        if(isset($controller[0]) && class_exists($controller[0])){
+            return self::response($controller[0], $params, $controller[1]);
         }
+        return self::responseBlock($identify, $params);
 
-        return self::response($controller[0], $params, $controller[1]);
     }
 
     /**
@@ -264,6 +275,31 @@ abstract class router
             self::getController()->main($infos);
 
             return 200;
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+    }
+
+    /**
+     * Inicia requisição pelo template identificado
+     *
+     * @param string                  $controller
+     * @param propertysInterface|null $params
+     * 
+     * @return void
+     * 
+     * @version 1.0.1
+     */
+    public static function responseBlock(string $identify, propertysInterface $infos = null)
+    {
+        if(!isset($identify) && empty($identify)){
+            throw new \Exception('O parâmetro Identify é obrigatório.');
+        }
+
+        try{
+            // benchmarck
+            (new display())->body(self::getBenchmarck()->identified($identify), $infos);
         }
         catch(\Exception $e){
             return 500;
