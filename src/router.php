@@ -128,6 +128,29 @@ abstract class router
     }
 
     /**
+     * Encaminha para template page content default da controller
+     *
+     * @param propertysInterface|null $params
+     * 
+     * @return mixed
+     * 
+     */
+    public static function page(propertysInterface &$params = null)
+    {
+        $controller = self::getController();
+        if(!isset($controller)){
+            throw new \Exception("Não encontrada a controller.");
+        }
+
+        $page = $controller->getPage();
+        if(!isset($page)){
+            throw new \Exception("Não existe um Page Template.");
+        }
+
+        return $controller->page($page, $params);
+    }
+
+    /**
      * Encaminha configuração de roteamento do identificador
      *
      * @param string $identify
@@ -138,18 +161,17 @@ abstract class router
      */
     public static function identify(string $identify, propertysInterface $params)
     {
-        $controller = null;
-
         // idenificador
         $config = self::getBenchmarck()::getIdentify()->getConfig()[$identify];
         if(isset($config) && !empty($config)){
             if(isset($config['controller']) && !empty($config['controller'])){
-                $controller = explode(':', $config['controller']);
+                $control = explode(':', $config['controller']);
             }
         }
-
-        if(isset($controller[0]) && class_exists($controller[0])){
-            return self::response($controller[0], $params, $controller[1]);
+        if(isset($control[0]) && class_exists($control[0])){
+            $controller = (get_class(self::$controller) === $control[0])? $control[0]: null;
+            $function   = (isset($control[1]))? $control[1]: null;
+            return self::response($controller, $params, $function);
         }
         return self::responseBlock($identify, $params);
 
@@ -258,13 +280,15 @@ abstract class router
 
         try{
             // inicia a controller
-            self::setController(new $controller());
+            if(get_class(self::$controller) !== $controller){
+                self::setController(new $controller());
+                // benchmarck
+                self::getController()->benchmarck(self::getBenchmarck());
+            }
             if(is_null(self::getController())){
                 return 404;
             }
 
-            // benchmarck
-            self::getController()->benchmarck(self::getBenchmarck());
             // chama evento anterior
             self::getController()->_before();
             if(isset($function) && !empty($function)){
