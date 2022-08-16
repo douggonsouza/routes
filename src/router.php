@@ -207,6 +207,12 @@ abstract class router
             throw new \Exception("Parametros obrigatórios não identificados.");
         }
 
+        // Tipo da requisição
+        if(strtoupper($typeRequest) !== strtoupper(self::getUsages()->getRequestMethod())){
+            return;
+        }
+
+        // Pattern
         if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
             return;
         }
@@ -219,6 +225,28 @@ abstract class router
         // }
 
         exit(self::response($controller, self::getInfos()));
+    }
+ 
+    /**
+     * exit - Retorna o response code de finalização da request
+     *
+     * @param  mixed $responseCode
+     * @param  mixed $identify
+     * @return void
+     */
+    public static function exit(string $responseCode, string $identify = null)
+    {
+        if(!isset($responseCode) || !isset($responseCode)){
+            throw new \Exception("Parametro Response Code não identificados.");
+        }
+
+        // responde com um layout benchmarck
+        if(isset($identify) && is_string($identify)){
+            exit(self::responseBlock($identify, self::getInfos()));
+        }
+
+        // responde com código
+        exit(self::http_response_code($responseCode));
     }
 
     /**
@@ -237,11 +265,12 @@ abstract class router
         }
 
         self::setInfos($propertys->add(array(
-            'header' => $usages->getHeader(),
-            'get' => $_GET,
-            'post' => $_POST,
-            'file' => $_FILES,
-            'request' => $usages->getRequest()
+            'HEADER' => $usages->getHeader(),
+            'REQUEST_METHOD' => $usages->getRequestMethod(),
+            'GET' => $_GET,
+            'POST' => $_POST,
+            'FILE' => $_FILES,
+            'REQUEST' => $usages->getRequest()
         )));
     }
 
@@ -333,43 +362,24 @@ abstract class router
     /**
      * Recarrega a classe de controller
      *
-     * @param string $controller
+     * @param string $pattern
      * 
      * @return mixed
      * 
      * @version 1.0.0
      */
-    public static function redirect(string $controller, propertysInterface $infos = null)
+    public static function redirect(string $pattern, propertysInterface $gets = null)
     {
-        if(!isset($controller) && empty($controller)){
+        if(!isset($pattern) && empty($pattern)){
             throw new \Exception('O parâmetro Controller é obrigatório.');
         }
 
         try{
-            return self::response($controller, $infos);
+            return header('Location: '. self::getUsages()->getHeader()['Origin'] . $pattern);
         }
         catch(\Exception $e){
             return 500;
         }
-    }
-
-    /**
-     * Recarrega a classe de controller
-     *
-     * @param string $urlRelative
-     * 
-     * @return mixed
-     * 
-     * @version 1.0.0
-     */
-    public static function location(string $urlRelative)
-    {
-        if(!isset($urlRelative) || empty($urlRelative) ){
-            return;
-        }
-
-        header("Location: $urlRelative");
-        exit;
     }
 
     /**
