@@ -108,6 +108,23 @@ abstract class router
     }
 
     /**
+     * Expõe o objeto de alertas
+     * 
+     * @param string $label
+     * 
+     * @return string
+     */
+    public static function alerts()
+    {
+        $benchmarck = self::getBenchmarck();
+        if(!isset($benchmarck)){ 
+            throw new \Exception("Benchmarck não identificado.");
+        }
+
+        return $benchmarck->getAlerts();
+    }
+
+    /**
      * Encaminha configuração de roteamento do bloco
      *
      * @param string $controller
@@ -217,6 +234,8 @@ abstract class router
             return;
         }
 
+        $function = self::identifyMethod($controller);
+
         // autenticação
         // if(isset($autenticate)){
         //     if(!$autenticate->isAutenticate()){
@@ -224,7 +243,7 @@ abstract class router
         //     }
         // }
 
-        exit(self::response($controller, self::getInfos()));
+        exit(self::response($controller, self::getInfos(), $function));
     }
  
     /**
@@ -270,7 +289,8 @@ abstract class router
             'GET' => $_GET,
             'POST' => $_POST,
             'FILE' => $_FILES,
-            'REQUEST' => $usages->getRequest()
+            'REQUEST' => $usages->getRequest(),
+            'PARAMSREQUEST' => $usages->getParamsRequest()
         )));
     }
 
@@ -290,7 +310,23 @@ abstract class router
         // traduz para regex
         return '/^' . self::getRegexed()->translate($text) . '$/';
     }
+    
+    /**
+     * identifyMethod - Identifica e retorna o metodo
+     *
+     * @param  string $controller
+     * @return string
+     */
+    protected static function identifyMethod(string &$controller)
+    {
+        if(is_int(strpos($controller, ':'))){
+            $class = explode(':',$controller);
+            $controller = $class[0];
+            return $class[1];
+        }
 
+        return null;
+    }
     /**
      * Instancia a classe de controller
      *
@@ -326,7 +362,6 @@ abstract class router
             }
             // chama função main
             self::getController()->main($infos);
-
             return 200;
         }
         catch(\Exception $e){
