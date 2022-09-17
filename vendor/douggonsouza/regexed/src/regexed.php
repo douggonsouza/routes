@@ -50,7 +50,7 @@ class regexed implements dicionaryInterface
             $text = $this->getDicionary()->$item($text);
         }
 
-        return $text;
+        return str_replace('/','\/',$text);
     }
 
     /**

@@ -3,7 +3,7 @@
     "description": "Gerenciamento das rotas para a requisição",
     "type": "library",
     "require": {
-        "douggonsouza/regexed": "dev-main"
+        "douggonsouza/regexed": "^1.0.0"
     },
     "license": "MIT",
     "autoload": {
