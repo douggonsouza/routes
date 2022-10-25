@@ -18,6 +18,9 @@ use douggonsouza\request\usagesInterface;
 use douggonsouza\propertys\propertysInterface;
 use douggonsouza\router\autentications\autenticationsInterface;
 use douggonsouza\mvc\view\display;
+use douggonsouza\benchmarck\benchmarckInterface;
+use douggonsouza\benchmarck\benchmarck;
+use douggonsouza\mvc\view\views;
 
 abstract class router
 {
@@ -125,26 +128,6 @@ abstract class router
     }
 
     /**
-     * Encaminha configuração de roteamento do bloco
-     *
-     * @param string $controller
-     * @param propertysInterface|null $params
-     * 
-     * @return mixed
-     * 
-     */
-    public static function block(string $controller, propertysInterface &$params = null)
-    {
-        $controller = explode(':', $controller);
-
-        if(!class_exists($controller[0])){
-            throw new \Exception('Inexistência da classe em memória.');
-        }
-
-        return self::response($controller[0], $params, $controller[1]);
-    }
-
-    /**
      * Encaminha para template page content default da controller
      *
      * @param propertysInterface|null $params
@@ -154,17 +137,12 @@ abstract class router
      */
     public static function page(propertysInterface &$params = null)
     {
-        $controller = self::getController();
-        if(!isset($controller)){
+        $page = self::getController()->getPage();
+        if(!isset($page)){
             throw new \Exception("Não encontrada a controller.");
         }
 
-        $page = $controller->getPage();
-        if(!isset($page)){
-            throw new \Exception("Não existe um Page Template.");
-        }
-
-        return $controller->page($page, $params);
+        return self::getController()->body($page, $params);
     }
 
     /**
@@ -192,6 +170,28 @@ abstract class router
         }
         return self::responseBlock($identify, $params);
 
+    }
+
+    /**
+     * Encaminha configuração de roteamento do identificador
+     *
+     * @param string $identify
+     * @param propertysInterface|null $params
+     * 
+     * @return mixed
+     * 
+     */
+    public static function identifyBlock(string $identify, propertysInterface $params)
+    {
+        // idenificador
+        $response = self::getBenchmarck()::getIdentify()->getConfig()[$identify]['controller'];
+        if(isset($response) && !empty($response)){
+            $controller = self::withMethod($response);
+
+            return self::response($controller[0], $params, $controller[1]);
+        }
+        
+        return self::responseView($identify, $params);
     }
 
     /**
@@ -245,6 +245,36 @@ abstract class router
 
         exit(self::response($controller, self::getInfos(), $function));
     }
+
+    /**
+     * Encaminha configuração de roteamento
+     *
+     * @param string $typeRequest
+     * @param string $pattern
+     * @param string $controller
+     * @param null   $autenticate
+     * 
+     * @return mixed
+     * 
+     */
+    public static function route(string $typeRequest, string $pattern, string $controller, $autenticate = null)
+    {
+        if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
+            throw new \Exception("Parametros obrigatórios não identificados.");
+        }
+
+        // Tipo da requisição
+        if(strtoupper($typeRequest) !== strtoupper(self::getUsages()->getRequestMethod())){
+            return;
+        }
+
+        // Pattern
+        if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
+            return;
+        }
+
+        exit(static::responseController($controller, self::getBenchmarck(), self::getInfos()));
+    }
  
     /**
      * exit - Retorna o response code de finalização da request
@@ -253,7 +283,7 @@ abstract class router
      * @param  mixed $identify
      * @return void
      */
-    public static function exit(string $responseCode, string $identify = null)
+    public static function end(string $responseCode, string $identify = null)
     {
         if(!isset($responseCode) || !isset($responseCode)){
             throw new \Exception("Parametro Response Code não identificados.");
@@ -261,11 +291,82 @@ abstract class router
 
         // responde com um layout benchmarck
         if(isset($identify) && is_string($identify)){
-            exit(self::responseBlock($identify, self::getInfos()));
+            self::responseBlock($identify, self::getInfos());
         }
 
         // responde com código
         exit(self::http_response_code($responseCode));
+    }
+
+    /**
+     * Method requestView
+     *
+     * @param string $template [explicite description]
+     * @param propertysInterface $infos [explicite description]
+     *
+     * @return void
+     */
+    private function responseController(string $controller, benchmarck $benchmarck, propertysInterface $infos)
+    {
+        try{
+            // inicia a controller
+            if(!isset($controller) || empty($controller)){
+                return 404;
+            }
+
+            $response = self::withMethod($controller);
+            $control = $response[0];
+            self::setController(new $response[0]());
+            self::getController()->setBenchmarck(self::getBenchmarck($benchmarck));
+            self::getController()->_before($infos);
+            self::getController()::{$response[1]}($infos);
+            self::getController()->_after($infos);
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+
+        return 200;
+    }
+
+    /**
+     * Method responseView
+     *
+     * @param string $template [explicite description]
+     * @param propertysInterface $infos [explicite description]
+     *
+     * @return void
+     */
+    public function responseView(string $response, propertysInterface $infos)
+    {
+        if(!isset($response) && empty($response)){
+            throw new \Exception('O parâmetro Response é obrigatório.');
+        }
+
+        try{
+            views::block($response, $infos);
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+
+        return 200;
+    }
+
+    /**
+     * withMethod - Identifica e retorna o metodo
+     *
+     * @param  string $controller
+     * @return string
+     */
+    protected static function withMethod(string $controller)
+    {
+        $response = array($controller, 'main');
+        if(is_int(strpos($controller, ':'))){
+            $response = explode(':', $controller);
+        }
+
+        return $response;
     }
 
     /**
@@ -327,6 +428,7 @@ abstract class router
 
         return null;
     }
+
     /**
      * Instancia a classe de controller
      *
@@ -355,7 +457,7 @@ abstract class router
             }
 
             // chama evento anterior
-            self::getController()->_before();
+            self::getController()->_before($infos);
             if(isset($function) && !empty($function)){
                 self::getController()->$function($infos);
                 return 200; 
