@@ -16,6 +16,7 @@ use douggonsouza\router\routerInterface;
 use douggonsouza\regexed\dicionaryInterface;
 use douggonsouza\request\usagesInterface;
 use douggonsouza\propertys\propertysInterface;
+use douggonsouza\propertys\propertys;
 use douggonsouza\router\autentications\autenticationsInterface;
 use douggonsouza\mvc\view\display;
 use douggonsouza\benchmarck\benchmarckInterface;
@@ -70,13 +71,13 @@ abstract class router
      * @return [type]
      * 
      */
-    public static function usages(usagesInterface $usages, propertysInterface $propertys = null)
+    public static function usages(usagesInterface $usages)
     {
         self::setUsages($usages);
 
-        if(isset($propertys)){
-            self::fillInfos(self::getUsages(), $propertys);
-        }
+        self::fillInfos(self::getUsages());
+
+        return self::getUsages();
     }
 
     /**
@@ -378,13 +379,13 @@ abstract class router
      * @return void
      * 
      */
-    public static function fillInfos(usagesInterface $usages, propertysInterface $propertys)
+    public static function fillInfos(usagesInterface $usages)
     {
-        if(!isset($usages) || !isset($propertys)){
-            throw new \Exception("Parâmetros 'usages' ou 'propertys' não existem.");
+        if(!isset($usages)){
+            throw new \Exception("Parâmetros 'usages' não existe.");
         }
 
-        self::setInfos($propertys->add(array(
+        self::setInfos(new propertys(array(
             'HEADER' => $usages->getHeader(),
             'REQUEST_METHOD' => $usages->getRequestMethod(),
             'GET' => $_GET,
