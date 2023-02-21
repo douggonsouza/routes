@@ -246,6 +246,38 @@ abstract class router
 
         exit(self::response($controller, self::getInfos(), $function));
     }
+    
+    /**
+     * Method path - Encaminha configuração de roteamento
+     *
+     * @param string $typeRequest 
+     * @param string $pattern 
+     * @param string $controller 
+     * @param string $page 
+     * @param $autenticate $autenticate 
+     *
+     * @return void
+     */
+    public static function path(string $typeRequest, string $pattern, string $controller, string $page = null, $autenticate = null)
+    {
+        if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
+            throw new \Exception("Parametros obrigatórios não identificados.");
+        }
+
+        // Tipo da requisição
+        if(strtoupper($typeRequest) !== strtoupper(self::getUsages()->getRequestMethod())){
+            return;
+        }
+
+        // Pattern
+        if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
+            return;
+        }
+
+        $function = self::identifyMethod($controller);
+
+        exit(self::responsePath($controller, self::getInfos(), $page, $function));
+    }
 
     /**
      * Encaminha configuração de roteamento
@@ -449,9 +481,66 @@ abstract class router
         try{
             // inicia a controller
             if(get_class(self::$controller) !== $controller){
-                self::setController(new $controller());
+                $control = new $controller();
+                self::setController($control);
                 // benchmarck
-                self::getController()->benchmarck(self::getBenchmarck());
+                self::getController()::setBenchmarck(self::getBenchmarck());
+            }
+            if(is_null(self::getController())){
+                return 404;
+            }
+
+            // chama evento anterior
+            self::getController()->_before($infos);
+            if(isset($function) && !empty($function)){
+                self::getController()->$function($infos);
+                return 200; 
+            }
+            // chama função main
+            self::getController()->main($infos);
+            return 200;
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+    }
+
+    /**
+     * 
+     *
+     * @param string     $controller
+     * @param array|null $params
+     * 
+     * @return void
+     * 
+     * @version 1.0.1
+     */    
+    /**
+     * Method responsePath - Inicia a controller com a página
+     *
+     * @param string $controller
+     * @param propertysInterface $infos 
+     * @param string $page 
+     * @param string $function 
+     *
+     * @return void
+     */
+    public static function responsePath(string $controller, propertysInterface $infos = null, string $page, string $function = null)
+    {
+        if(!isset($controller) && empty($controller)){
+            throw new \Exception('O parâmetro Controller é obrigatório.');
+        }
+
+        try{
+            // inicia a controller
+            if(get_class(self::$controller) !== $controller){
+                $control = new $controller();
+                self::setController($control);
+                if(isset($page) && !empty($page)){
+                    self::getController()->setPage();
+                }
+                // benchmarck
+                self::getController()::setBenchmarck(self::getBenchmarck());
             }
             if(is_null(self::getController())){
                 return 404;
