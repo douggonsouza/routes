@@ -12,15 +12,12 @@
 namespace douggonsouza\routes;
 
 use douggonsouza\regexed\regexed;
-use douggonsouza\router\routerInterface;
 use douggonsouza\regexed\dicionaryInterface;
 use douggonsouza\request\usagesInterface;
 use douggonsouza\propertys\propertysInterface;
 use douggonsouza\propertys\propertys;
-use douggonsouza\router\autentications\autenticationsInterface;
 use douggonsouza\mvc\view\display;
 use douggonsouza\benchmarck\benchmarckInterface;
-use douggonsouza\benchmarck\benchmarck;
 use douggonsouza\mvc\view\views;
 
 abstract class router
@@ -330,16 +327,17 @@ abstract class router
         // responde com código
         exit(self::http_response_code($responseCode));
     }
-
+   
     /**
-     * Method requestView
+     * Method responseController - Responde a rota conforme a controller
      *
-     * @param string $template [explicite description]
-     * @param propertysInterface $infos [explicite description]
+     * @param string $controller 
+     * @param benchmarckInterface $benchmarck 
+     * @param propertysInterface $infos 
      *
      * @return void
      */
-    private function responseController(string $controller, benchmarck $benchmarck, propertysInterface $infos)
+    private function responseController(string $controller, benchmarckInterface $benchmarck, propertysInterface $infos)
     {
         try{
             // inicia a controller
@@ -468,7 +466,7 @@ abstract class router
      * @param string     $controller
      * @param array|null $params
      * 
-     * @return void
+     * @return int
      * 
      * @version 1.0.1
      */
@@ -523,7 +521,7 @@ abstract class router
      * @param string $page 
      * @param string $function 
      *
-     * @return void
+     * @return void|int
      */
     public static function responsePath(string $controller, propertysInterface $infos = null, string $page, string $function = null)
     {
@@ -567,7 +565,7 @@ abstract class router
      * @param string                  $controller
      * @param propertysInterface|null $params
      * 
-     * @return void
+     * @return void|int
      * 
      * @version 1.0.1
      */
