@@ -12,12 +12,13 @@
 namespace douggonsouza\routes;
 
 use douggonsouza\regexed\regexed;
-use douggonsouza\regexed\dicionaryInterface;
-use douggonsouza\request\usagesInterface;
-use douggonsouza\propertys\propertysInterface;
 use douggonsouza\propertys\propertys;
 use douggonsouza\mvc\view\display;
+use douggonsouza\request\usagesInterface;
+use douggonsouza\regexed\dicionaryInterface;
+use douggonsouza\propertys\propertysInterface;
 use douggonsouza\benchmarck\benchmarckInterface;
+use douggonsouza\mvc\control\controllersInterface;
 use douggonsouza\mvc\view\views;
 
 abstract class router
@@ -179,6 +180,57 @@ abstract class router
      * @return mixed
      * 
      */
+    public static function block(string $template, propertysInterface $params = null)
+    {
+        // idenificador
+        if(!isset($template) || empty($template)){
+            throw new \Exception("Não identificado o template.");
+        }
+
+        try{
+            // benchmarck
+            views::view(null, $params, $template);
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+    }
+
+    /**
+     * Encaminha configuração de roteamento do identificador
+     *
+     * @param string $identify
+     * @param propertysInterface|null $params
+     * 
+     * @return mixed
+     * 
+     */
+    public static function content(propertysInterface $params)
+    {
+        $template = self::getController()::getPage();
+        if(is_null($template) || empty($template)){
+            throw new \Exception("Page Content não identificado.");
+        }
+
+        try{
+            // benchmarck
+            views::view(null, $params, $template);
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+
+    }
+
+    /**
+     * Encaminha configuração de roteamento do identificador
+     *
+     * @param string $identify
+     * @param propertysInterface|null $params
+     * 
+     * @return mixed
+     * 
+     */
     public static function identifyBlock(string $identify, propertysInterface $params)
     {
         // idenificador
@@ -274,6 +326,35 @@ abstract class router
         $function = self::identifyMethod($controller);
 
         exit(self::responsePath($controller, self::getInfos(), $page, $function));
+    }
+ 
+    /**
+     * Method control - Encaminha configuração de roteamento
+     *
+     * @param string $typeRequest 
+     * @param string $pattern 
+     * @param controllersInterface $controller 
+     * @param string $function 
+     *
+     * @return void
+     */
+    public static function control(string $typeRequest, string $pattern, controllersInterface $controller, string $function = 'main')
+    {
+        if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
+            throw new \Exception("Parametros obrigatórios não identificados.");
+        }
+
+        // Tipo da requisição
+        if(strtoupper($typeRequest) !== strtoupper(self::getUsages()->getRequestMethod())){
+            throw new \Exception("Não identificado o tipo de requisição.");
+        }
+
+        // Pattern
+        if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
+            return;
+        }
+
+        exit(self::controlAction($controller, $function));
     }
 
     /**
@@ -502,17 +583,7 @@ abstract class router
             return 500;
         }
     }
-
-    /**
-     * 
-     *
-     * @param string     $controller
-     * @param array|null $params
-     * 
-     * @return void
-     * 
-     * @version 1.0.1
-     */    
+   
     /**
      * Method responsePath - Inicia a controller com a página
      *
@@ -535,7 +606,7 @@ abstract class router
                 $control = new $controller();
                 self::setController($control);
                 if(isset($page) && !empty($page)){
-                    self::getController()->setPage();
+                    self::getController()::setPage($page);
                 }
                 // benchmarck
                 self::getController()::setBenchmarck(self::getBenchmarck());
@@ -552,6 +623,35 @@ abstract class router
             }
             // chama função main
             self::getController()->main($infos);
+            return 200;
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+    }
+   
+    /**
+     * Method controlAction - Inicia a controller com a página
+     *
+     * @param controllersInterface $controller 
+     * @param string $function 
+     *
+     * @return void
+     */
+    public static function controlAction(controllersInterface $controller, string $function = 'main')
+    {
+        if(!isset($controller) && empty($controller)){
+            throw new \Exception('O parâmetro Controller é obrigatório.');
+        }
+
+        self::setController($controller);
+        if(is_null(self::getController())){
+            return 404;
+        }
+
+        try{
+            self::getController()->_before(self::getController()::getInfos());
+            self::getController()->$function(self::getController()::getInfos());
             return 200;
         }
         catch(\Exception $e){
@@ -768,6 +868,8 @@ abstract class router
 
     /**
      * Get the value of benchmarck
+     * 
+     * @return benchmarckInterface
      */ 
     public static function getBenchmarck()
     {
@@ -777,9 +879,9 @@ abstract class router
     /**
      * Set the value of benchmarck
      *
-     * @return  self
+     * @return  void
      */ 
-    public static function setBenchmarck($benchmarck)
+    public static function setBenchmarck(benchmarckInterface $benchmarck)
     {
         if(isset($benchmarck) && !empty($benchmarck)){
             self::$benchmarck = $benchmarck;
@@ -809,6 +911,8 @@ abstract class router
 
     /**
      * Get the value of infos
+     * 
+     * @return propertysInterface
      */ 
     public static function getInfos()
     {
