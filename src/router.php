@@ -11,6 +11,7 @@
 
 namespace douggonsouza\routes;
 
+use douggonsouza\routes\routerInterface;
 use douggonsouza\regexed\regexed;
 use douggonsouza\propertys\propertys;
 use douggonsouza\mvc\view\display;
@@ -21,7 +22,7 @@ use douggonsouza\benchmarck\benchmarckInterface;
 use douggonsouza\mvc\control\controllersInterface;
 use douggonsouza\mvc\view\views;
 
-abstract class router
+abstract class router implements routerInterface
 {
     // TIPOS DE REQUISIÇÃO
     const _POST   = 'POST';
