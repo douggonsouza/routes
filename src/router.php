@@ -126,52 +126,6 @@ abstract class router implements routerInterface
 
         return $benchmarck->getAlerts();
     }
-
-    /**
-     * Encaminha para template page content default da controller
-     *
-     * @param propertysInterface|null $params
-     * 
-     * @return mixed
-     * 
-     */
-    public static function page(propertysInterface &$params = null)
-    {
-        $page = self::getController()->getPage();
-        if(!isset($page)){
-            throw new \Exception("Não encontrada a controller.");
-        }
-
-        return self::getController()->body($page, $params);
-    }
-
-    /**
-     * Encaminha configuração de roteamento do identificador
-     *
-     * @param string $identify
-     * @param propertysInterface|null $params
-     * 
-     * @return mixed
-     * 
-     */
-    public static function identify(string $identify, propertysInterface $params)
-    {
-        // idenificador
-        $config = self::getBenchmarck()::getIdentify()->getConfig()[$identify];
-        if(isset($config) && !empty($config)){
-            if(isset($config['controller']) && !empty($config['controller'])){
-                $control = explode(':', $config['controller']);
-            }
-        }
-        if(isset($control[0]) && class_exists($control[0])){
-            $controller = (get_class(self::$controller) === $control[0])? $control[0]: null;
-            $function   = (isset($control[1]))? $control[1]: null;
-            return self::response($controller, $params, $function);
-        }
-        return self::responseBlock($identify, $params);
-
-    }
-
     /**
      * Encaminha configuração de roteamento do identificador
      *
@@ -224,28 +178,6 @@ abstract class router implements routerInterface
     }
 
     /**
-     * Encaminha configuração de roteamento do identificador
-     *
-     * @param string $identify
-     * @param propertysInterface|null $params
-     * 
-     * @return mixed
-     * 
-     */
-    public static function identifyBlock(string $identify, propertysInterface $params)
-    {
-        // idenificador
-        $response = self::getBenchmarck()::getIdentify()->getConfig()[$identify]['controller'];
-        if(isset($response) && !empty($response)){
-            $controller = self::withMethod($response);
-
-            return self::response($controller[0], $params, $controller[1]);
-        }
-        
-        return self::responseView($identify, $params);
-    }
-
-    /**
      * Encaminha configuração para assets
      *
      * @param string $asset
@@ -256,77 +188,6 @@ abstract class router implements routerInterface
     public static function assets(string $asset, string $type)
     {
         return self::getBenchmarck()->assets($asset, $type);
-    }
-
-    /**
-     * Encaminha configuração de roteamento
-     *
-     * @param string $typeRequest
-     * @param string $pattern
-     * @param string $controller
-     * @param null   $autenticate
-     * 
-     * @return mixed
-     * 
-     */
-    public static function routing(string $typeRequest, string $pattern, string $controller, $autenticate = null)
-    {
-        if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
-            throw new \Exception("Parametros obrigatórios não identificados.");
-        }
-
-        // Tipo da requisição
-        if(strtoupper($typeRequest) !== strtoupper(self::getUsages()->getRequestMethod())){
-            return;
-        }
-
-        // Pattern
-        if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
-            return;
-        }
-
-        $function = self::identifyMethod($controller);
-
-        // autenticação
-        // if(isset($autenticate)){
-        //     if(!$autenticate->isAutenticate()){
-        //         exit(self::http_response_code(401));
-        //     }
-        // }
-
-        exit(self::response($controller, self::getInfos(), $function));
-    }
-    
-    /**
-     * Method path - Encaminha configuração de roteamento
-     *
-     * @param string $typeRequest 
-     * @param string $pattern 
-     * @param string $controller 
-     * @param string $page 
-     * @param $autenticate $autenticate 
-     *
-     * @return void
-     */
-    public static function path(string $typeRequest, string $pattern, string $controller, string $page = null, $autenticate = null)
-    {
-        if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
-            throw new \Exception("Parametros obrigatórios não identificados.");
-        }
-
-        // Tipo da requisição
-        if(strtoupper($typeRequest) !== strtoupper(self::getUsages()->getRequestMethod())){
-            return;
-        }
-
-        // Pattern
-        if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
-            return;
-        }
-
-        $function = self::identifyMethod($controller);
-
-        exit(self::responsePath($controller, self::getInfos(), $page, $function));
     }
  
     /**
@@ -339,37 +200,7 @@ abstract class router implements routerInterface
      *
      * @return void
      */
-    public static function control(string $typeRequest, string $pattern, controllersInterface $controller, string $function = 'main')
-    {
-        if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
-            throw new \Exception("Parametros obrigatórios não identificados.");
-        }
-
-        // Tipo da requisição
-        if(strtoupper($typeRequest) !== strtoupper(self::getUsages()->getRequestMethod())){
-            throw new \Exception("Não identificado o tipo de requisição.");
-        }
-
-        // Pattern
-        if (!preg_match(self::translate($pattern), self::getUsages()->getRequest(), $params)){
-            return;
-        }
-
-        exit(self::controlAction($controller, $function));
-    }
-
-    /**
-     * Encaminha configuração de roteamento
-     *
-     * @param string $typeRequest
-     * @param string $pattern
-     * @param string $controller
-     * @param null   $autenticate
-     * 
-     * @return mixed
-     * 
-     */
-    public static function route(string $typeRequest, string $pattern, string $controller, $autenticate = null)
+    public static function routing(string $typeRequest, string $pattern, controllersInterface $controller, string $function = 'main')
     {
         if(!isset($typeRequest) || !isset($pattern) || !isset($controller)){
             throw new \Exception("Parametros obrigatórios não identificados.");
@@ -385,7 +216,7 @@ abstract class router implements routerInterface
             return;
         }
 
-        exit(static::responseController($controller, self::getBenchmarck(), self::getInfos()));
+        exit(self::response($controller, $function));
     }
  
     /**
@@ -395,75 +226,19 @@ abstract class router implements routerInterface
      * @param  mixed $identify
      * @return void
      */
-    public static function end(string $responseCode, string $identify = null)
+    public static function end(string $responseCode, controllersInterface $control = null)
     {
         if(!isset($responseCode) || !isset($responseCode)){
             throw new \Exception("Parametro Response Code não identificados.");
         }
 
         // responde com um layout benchmarck
-        if(isset($identify) && is_string($identify)){
-            self::responseBlock($identify, self::getInfos());
+        if(isset($control) && is_string($control)){
+            self::response($control, self::getInfos());
         }
 
         // responde com código
         exit(self::http_response_code($responseCode));
-    }
-   
-    /**
-     * Method responseController - Responde a rota conforme a controller
-     *
-     * @param string $controller 
-     * @param benchmarckInterface $benchmarck 
-     * @param propertysInterface $infos 
-     *
-     * @return void
-     */
-    private function responseController(string $controller, benchmarckInterface $benchmarck, propertysInterface $infos)
-    {
-        try{
-            // inicia a controller
-            if(!isset($controller) || empty($controller)){
-                return 404;
-            }
-
-            $response = self::withMethod($controller);
-            $control = $response[0];
-            self::setController(new $response[0]());
-            self::getController()->setBenchmarck(self::getBenchmarck($benchmarck));
-            self::getController()->_before($infos);
-            self::getController()::{$response[1]}($infos);
-            self::getController()->_after($infos);
-        }
-        catch(\Exception $e){
-            return 500;
-        }
-
-        return 200;
-    }
-
-    /**
-     * Method responseView
-     *
-     * @param string $template [explicite description]
-     * @param propertysInterface $infos [explicite description]
-     *
-     * @return void
-     */
-    public function responseView(string $response, propertysInterface $infos)
-    {
-        if(!isset($response) && empty($response)){
-            throw new \Exception('O parâmetro Response é obrigatório.');
-        }
-
-        try{
-            views::block($response, $infos);
-        }
-        catch(\Exception $e){
-            return 500;
-        }
-
-        return 200;
     }
 
     /**
@@ -541,96 +316,6 @@ abstract class router implements routerInterface
 
         return null;
     }
-
-    /**
-     * Instancia a classe de controller
-     *
-     * @param string     $controller
-     * @param array|null $params
-     * 
-     * @return int
-     * 
-     * @version 1.0.1
-     */
-    public static function response(string $controller, propertysInterface $infos = null, string $function = null)
-    {
-        if(!isset($controller) && empty($controller)){
-            throw new \Exception('O parâmetro Controller é obrigatório.');
-        }
-
-        try{
-            // inicia a controller
-            if(get_class(self::$controller) !== $controller){
-                $control = new $controller();
-                self::setController($control);
-                // benchmarck
-                self::getController()::setBenchmarck(self::getBenchmarck());
-            }
-            if(is_null(self::getController())){
-                return 404;
-            }
-
-            // chama evento anterior
-            self::getController()->_before($infos);
-            if(isset($function) && !empty($function)){
-                self::getController()->$function($infos);
-                return 200; 
-            }
-            // chama função main
-            self::getController()->main($infos);
-            return 200;
-        }
-        catch(\Exception $e){
-            return 500;
-        }
-    }
-   
-    /**
-     * Method responsePath - Inicia a controller com a página
-     *
-     * @param string $controller
-     * @param propertysInterface $infos 
-     * @param string $page 
-     * @param string $function 
-     *
-     * @return void|int
-     */
-    public static function responsePath(string $controller, propertysInterface $infos = null, string $page, string $function = null)
-    {
-        if(!isset($controller) && empty($controller)){
-            throw new \Exception('O parâmetro Controller é obrigatório.');
-        }
-
-        try{
-            // inicia a controller
-            if(get_class(self::$controller) !== $controller){
-                $control = new $controller();
-                self::setController($control);
-                if(isset($page) && !empty($page)){
-                    self::getController()::setPage($page);
-                }
-                // benchmarck
-                self::getController()::setBenchmarck(self::getBenchmarck());
-            }
-            if(is_null(self::getController())){
-                return 404;
-            }
-
-            // chama evento anterior
-            self::getController()->_before($infos);
-            if(isset($function) && !empty($function)){
-                self::getController()->$function($infos);
-                return 200; 
-            }
-            // chama função main
-            self::getController()->main($infos);
-            return 200;
-        }
-        catch(\Exception $e){
-            return 500;
-        }
-    }
-   
     /**
      * Method controlAction - Inicia a controller com a página
      *
@@ -639,7 +324,7 @@ abstract class router implements routerInterface
      *
      * @return void
      */
-    public static function controlAction(controllersInterface $controller, string $function = 'main')
+    public static function response(controllersInterface $controller, string $function = 'main')
     {
         if(!isset($controller) && empty($controller)){
             throw new \Exception('O parâmetro Controller é obrigatório.');
@@ -654,31 +339,6 @@ abstract class router implements routerInterface
             self::getController()->_before(self::getController()::getInfos());
             self::getController()->$function(self::getController()::getInfos());
             return 200;
-        }
-        catch(\Exception $e){
-            return 500;
-        }
-    }
-
-    /**
-     * Inicia requisição pelo template identificado
-     *
-     * @param string                  $controller
-     * @param propertysInterface|null $params
-     * 
-     * @return void|int
-     * 
-     * @version 1.0.1
-     */
-    public static function responseBlock(string $identify, propertysInterface $infos = null)
-    {
-        if(!isset($identify) && empty($identify)){
-            throw new \Exception('O parâmetro Identify é obrigatório.');
-        }
-
-        try{
-            // benchmarck
-            (new display())->body(self::getBenchmarck()->identified($identify), $infos);
         }
         catch(\Exception $e){
             return 500;
