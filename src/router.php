@@ -18,7 +18,7 @@ use douggonsouza\mvc\view\display;
 use douggonsouza\request\usagesInterface;
 use douggonsouza\regexed\dicionaryInterface;
 use douggonsouza\propertys\propertysInterface;
-use douggonsouza\benchmarck\benchmarckInterface;
+use douggonsouza\gentelela\benchmarckInterface;
 use douggonsouza\mvc\control\controllersInterface;
 use douggonsouza\mvc\view\views;
 
@@ -126,6 +126,7 @@ abstract class router implements routerInterface
 
         return $benchmarck->getAlerts();
     }
+
     /**
      * Encaminha configuração de roteamento do identificador
      *
@@ -145,6 +146,31 @@ abstract class router implements routerInterface
         try{
             // benchmarck
             views::view(null, $params, $template);
+        }
+        catch(\Exception $e){
+            return 500;
+        }
+    }
+
+    /**
+     * Method part
+     *
+     * @param controllersInterface $control [explicite description]
+     * @param propertysInterface $params [explicite description]
+     * @param string $function [explicite description]
+     *
+     * @return void
+     */
+    public static function part(controllersInterface $control, propertysInterface $params = null, string $function = 'main')
+    {
+        // idenificador
+        if(!isset($control) || empty($control)){
+            throw new \Exception("Não identificado o controlador.");
+        }
+
+        try{
+            $control->$function($params);
+            return;
         }
         catch(\Exception $e){
             return 500;

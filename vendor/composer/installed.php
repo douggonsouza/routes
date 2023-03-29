@@ -3,7 +3,7 @@
         'name' => 'douggonsouza/routes',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'b6eea735f9398153beb729f0c1a31f81750d8330',
+        'reference' => '1d59e80bcc49e4c69befbee32f84d079b6dbbe63',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'douggonsouza/routes' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'b6eea735f9398153beb729f0c1a31f81750d8330',
+            'reference' => '1d59e80bcc49e4c69befbee32f84d079b6dbbe63',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
