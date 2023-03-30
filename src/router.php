@@ -20,6 +20,8 @@ use douggonsouza\regexed\dicionaryInterface;
 use douggonsouza\propertys\propertysInterface;
 use douggonsouza\gentelela\benchmarckInterface;
 use douggonsouza\mvc\control\controllersInterface;
+use douggonsouza\gentelela\alerts;
+use douggonsouza\gentelela\alertsInterface;
 use douggonsouza\mvc\view\views;
 
 abstract class router implements routerInterface
@@ -115,7 +117,22 @@ abstract class router implements routerInterface
      * 
      * @param string $label
      * 
-     * @return string
+     * @return bool
+     */
+    public static function setAlert(string $message, string $badge = alerts::BADGE_SUCCESS)
+    {
+        $benchmarck = self::getBenchmarck();
+        if(!isset($benchmarck)){ 
+            throw new \Exception("Benchmarck não identificado.");
+        }
+
+        return ($benchmarck->getAlerts())::set($message, $badge);
+    }
+    
+    /**
+     * Method alerts
+     *
+     * @return object
      */
     public static function alerts()
     {
