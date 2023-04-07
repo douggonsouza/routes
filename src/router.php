@@ -20,8 +20,8 @@ use douggonsouza\regexed\dicionaryInterface;
 use douggonsouza\propertys\propertysInterface;
 use douggonsouza\gentelela\benchmarckInterface;
 use douggonsouza\mvc\control\controllersInterface;
-use douggonsouza\gentelela\alerts;
-use douggonsouza\gentelela\alertsInterface;
+use douggonsouza\gentelela\genalerts;
+use douggonsouza\gentelela\genalertsInterface;
 use douggonsouza\mvc\view\views;
 
 abstract class router implements routerInterface
