@@ -119,7 +119,7 @@ abstract class router implements routerInterface
      * 
      * @return bool
      */
-    public static function setAlert(string $message, string $badge = alerts::BADGE_SUCCESS)
+    public static function setAlert(string $message, string $badge = 'Success')
     {
         $benchmarck = self::getBenchmarck();
         if(!isset($benchmarck)){ 
